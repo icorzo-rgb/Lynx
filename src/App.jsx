@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 
 export function App() {
-  // Estado de Datos y Persistencia Real en LocalStorage (Sin datos falsos por IA)
+  // Estado de Datos y Persistencia Real en LocalStorage
   const [providers, setProviders] = useState(() => getStoredProviders());
   const [favorites, setFavorites] = useState(() => getStoredFavorites());
 
@@ -99,8 +99,9 @@ export function App() {
           const matchesName = p.name.toLowerCase().includes(q);
           const matchesBusiness = p.businessName?.toLowerCase().includes(q);
           const matchesCat = p.categoryName.toLowerCase().includes(q);
+          const matchesCustom = p.customTrade?.toLowerCase().includes(q);
           const matchesBio = p.shortBio?.toLowerCase().includes(q);
-          if (!matchesName && !matchesBusiness && !matchesCat && !matchesBio) {
+          if (!matchesName && !matchesBusiness && !matchesCat && !matchesBio && !matchesCustom) {
             return false;
           }
         }
@@ -136,23 +137,20 @@ export function App() {
       });
   }, [providers, selectedCategory, searchQuery, onlyMatriculados, emergencyOnly, freeQuoteOnly, sortBy]);
 
-  // Manejador para agregar nueva reseña
+  // Manejador del Sistema de Puntuación (Estrellas de 0 a 5 sin puntuaciones ficticias)
   const handleAddReview = (providerId, newReview) => {
     setProviders((prev) =>
       prev.map((p) => {
         if (p.id === providerId) {
           const updatedReviews = [newReview, ...(p.reviews || [])];
-          const newTotal = (p.totalReviews || 0) + 1;
-          const currentRating = p.rating || 5.0;
-          const newAvg = (
-            (currentRating * (newTotal - 1) + newReview.ratingOverall) /
-            newTotal
-          ).toFixed(1);
+          const newTotal = updatedReviews.length;
+          const sumRatings = updatedReviews.reduce((acc, r) => acc + (Number(r.ratingOverall) || 0), 0);
+          const newAvg = parseFloat((sumRatings / newTotal).toFixed(1));
 
           return {
             ...p,
             totalReviews: newTotal,
-            rating: parseFloat(newAvg),
+            rating: newAvg,
             reviews: updatedReviews
           };
         }
@@ -161,15 +159,22 @@ export function App() {
     );
 
     if (selectedProvider && selectedProvider.id === providerId) {
-      setSelectedProvider((prev) => ({
-        ...prev,
-        totalReviews: (prev.totalReviews || 0) + 1,
-        reviews: [newReview, ...(prev.reviews || [])]
-      }));
+      setSelectedProvider((prev) => {
+        const updatedReviews = [newReview, ...(prev.reviews || [])];
+        const newTotal = updatedReviews.length;
+        const sumRatings = updatedReviews.reduce((acc, r) => acc + (Number(r.ratingOverall) || 0), 0);
+        const newAvg = parseFloat((sumRatings / newTotal).toFixed(1));
+        return {
+          ...prev,
+          totalReviews: newTotal,
+          rating: newAvg,
+          reviews: updatedReviews
+        };
+      });
     }
   };
 
-  // Manejador para registrar nuevo trabajador / oficio real
+  // Manejador para registrar nuevo trabajador / oficio
   const handleAddProvider = (newProvider) => {
     setProviders((prev) => [newProvider, ...prev]);
   };

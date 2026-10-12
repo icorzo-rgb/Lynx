@@ -4,12 +4,7 @@ import {
   MapPin, 
   User, 
   Plus, 
-  ChevronDown, 
-  Flame, 
-  Menu, 
-  X,
-  Search,
-  Check
+  ChevronDown
 } from 'lucide-react';
 import { LynxLogo } from './LynxLogo';
 import { ARGENTINA_LOCATIONS } from '../data/mockData';
@@ -24,7 +19,6 @@ export const Navbar = ({
   unreadNotifications = 1
 }) => {
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-40 w-full glass-nav border-b border-purple-100/80 shadow-sm transition-all">
@@ -84,7 +78,7 @@ export const Navbar = ({
             </div>
           </div>
 
-          {/* Iconos de Cabecera (Campana de Notificación y Avatar de Usuario) */}
+          {/* Acciones de Cabecera */}
           <div className="flex items-center gap-2 sm:gap-3">
             
             {/* Botón Desktop: Publicar Trabajo / Sumar Oficio */}
@@ -108,11 +102,11 @@ export const Navbar = ({
               )}
             </button>
 
-            {/* Avatar de Perfil */}
+            {/* Botón de Perfil / Mis Publicaciones */}
             <button
               onClick={onOpenProfile}
               className="p-2 rounded-2xl bg-purple-100/70 hover:bg-purple-200/70 text-brand-900 transition-colors border border-purple-200"
-              title="Mi Cuenta / Perfil"
+              title="Mis Publicaciones / Perfil"
             >
               <User className="w-5 h-5 text-brand-700" />
             </button>

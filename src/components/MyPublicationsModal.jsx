@@ -5,7 +5,8 @@ import {
   MapPin, 
   Eye, 
   Trash2, 
-  Sparkles 
+  Sparkles,
+  Star
 } from 'lucide-react';
 import { AvatarDisplay } from './AvatarDisplay';
 
@@ -16,7 +17,8 @@ export const MyPublicationsModal = ({
   onDeleteProvider,
   onClose
 }) => {
-  const userPublications = providers.filter(p => p.id.startsWith('prov-custom-') || p.isUserCreated);
+  // Publicaciones de oficios creadas
+  const userPublications = providers.filter(p => p.isUserCreated || p.id.startsWith('prov-custom-'));
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
@@ -57,7 +59,7 @@ export const MyPublicationsModal = ({
             userPublications.map((pub) => (
               <div
                 key={pub.id}
-                className="p-4 rounded-3xl bg-purple-50/50 border border-purple-100 space-y-3"
+                className="p-4 rounded-3xl bg-purple-50/50 border border-purple-100 space-y-3 shadow-soft"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -76,7 +78,7 @@ export const MyPublicationsModal = ({
                         </span>
                       </div>
                       <p className="text-xs text-brand-700 font-semibold">
-                        {pub.categoryName}
+                        {pub.categoryName} {pub.customTrade ? `(${pub.customTrade})` : ''}
                       </p>
                       <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
                         <MapPin className="w-3 h-3 text-brand-500" />
@@ -87,7 +89,11 @@ export const MyPublicationsModal = ({
 
                   {onDeleteProvider && (
                     <button
-                      onClick={() => onDeleteProvider(pub.id)}
+                      onClick={() => {
+                        if (window.confirm('¿Seguro que deseas eliminar esta publicación de oficio?')) {
+                          onDeleteProvider(pub.id);
+                        }
+                      }}
                       className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
                       title="Eliminar publicación"
                     >
@@ -124,7 +130,7 @@ export const MyPublicationsModal = ({
                   Aún no publicaste ningún oficio
                 </h3>
                 <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                  Registrá tu perfil en Lynx para empezar a recibir consultas directas de personas en tu zona.
+                  Registrá tu perfil en Lynx para empezar a recibir consultas directas y calificaciones de personas en tu zona.
                 </p>
               </div>
 

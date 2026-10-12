@@ -92,8 +92,24 @@ export const getStoredProviders = () => {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        // Filtrar exclusivamente perfiles reales creados por usuarios
-        return parsed.filter(p => p.isUserCreated || p.id.startsWith('prov-custom-'));
+        // Filtrar exclusivamente perfiles reales creados por usuarios y limpiar reseñas ficticias
+        return parsed
+          .filter(p => p.isUserCreated || p.id.startsWith('prov-custom-'))
+          .map(p => {
+            const realReviews = (p.reviews || []).filter(
+              r => !r.id?.startsWith('rev-welcome-') && r.clientName !== 'Equipo de Validación Lynx'
+            );
+            const total = realReviews.length;
+            const avg = total > 0 
+              ? parseFloat((realReviews.reduce((acc, r) => acc + (Number(r.ratingOverall) || 0), 0) / total).toFixed(1))
+              : null;
+            return {
+              ...p,
+              reviews: realReviews,
+              totalReviews: total,
+              rating: avg
+            };
+          });
       }
     }
   } catch (err) {

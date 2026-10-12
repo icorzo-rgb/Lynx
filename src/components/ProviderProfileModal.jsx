@@ -107,11 +107,18 @@ export const ProviderProfileModal = ({
 
                 {/* Rating y Distancia */}
                 <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 mt-1.5">
-                  <span className="flex items-center gap-1 font-bold text-amber-600">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    <span>{(provider.rating || 5.0).toFixed(1)}</span>
-                    <span className="text-slate-400 font-normal">({provider.totalReviews || 1} reseñas)</span>
-                  </span>
+                  {provider.totalReviews > 0 && provider.rating !== null ? (
+                    <span className="flex items-center gap-1 font-bold text-amber-600">
+                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                      <span>{Number(provider.rating).toFixed(1)}</span>
+                      <span className="text-slate-400 font-normal">({provider.totalReviews} reseñas)</span>
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 font-medium text-slate-400">
+                      <Star className="w-3.5 h-3.5 text-slate-300" />
+                      <span>Sin calificaciones aún</span>
+                    </span>
+                  )}
                   <span>•</span>
                   <span className="flex items-center gap-1 font-semibold text-slate-700">
                     <MapPin className="w-3.5 h-3.5 text-brand-600" />
@@ -212,13 +219,18 @@ export const ProviderProfileModal = ({
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-0.5 text-amber-500">
-                        {[...Array(5)].map((_, i) => (
-                          <Star 
-                            key={i} 
-                            className={`w-3 h-3 ${i < Math.floor(rev.ratingOverall) ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`} 
-                          />
-                        ))}
+                      <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-0.5 text-amber-500">
+                          {[1, 2, 3, 4, 5].map((starNum) => (
+                            <Star 
+                              key={starNum} 
+                              className={`w-3 h-3 ${starNum <= Math.round(Number(rev.ratingOverall)) ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`} 
+                            />
+                          ))}
+                        </div>
+                        <span className="text-[11px] font-extrabold text-slate-700">
+                          {Number(rev.ratingOverall).toFixed(1)}
+                        </span>
                       </div>
                     </div>
 

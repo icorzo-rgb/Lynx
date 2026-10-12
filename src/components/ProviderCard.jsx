@@ -81,11 +81,20 @@ export const ProviderCard = ({
               <strong className="text-brand-800 font-bold shrink-0">{provider.distanceKm ? `${provider.distanceKm.toFixed(1)} km` : 'Cerca'}</strong>
             </div>
 
-            {/* Rating */}
+            {/* Rating Real de 0 a 5 estrellas */}
             <div className="flex items-center gap-1 mt-1 text-xs">
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span className="font-extrabold text-slate-800">{(provider.rating || 5.0).toFixed(1)}</span>
-              <span className="text-[11px] text-slate-400">({provider.totalReviews || 1})</span>
+              {provider.totalReviews > 0 && provider.rating !== null ? (
+                <>
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  <span className="font-extrabold text-slate-800">{Number(provider.rating).toFixed(1)}</span>
+                  <span className="text-[11px] text-slate-400">({provider.totalReviews})</span>
+                </>
+              ) : (
+                <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
+                  <Star className="w-3.5 h-3.5 text-slate-300" />
+                  <span>Sin calificaciones</span>
+                </span>
+              )}
             </div>
           </div>
         </div>
