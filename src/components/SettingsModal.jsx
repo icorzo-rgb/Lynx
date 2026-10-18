@@ -13,7 +13,13 @@ import {
 } from 'lucide-react';
 import { LynxLogo } from './LynxLogo';
 
-export const SettingsModal = ({ onClose, onOpenSplash }) => {
+export const SettingsModal = ({ 
+  onClose, 
+  onOpenSplash, 
+  canInstall = false, 
+  isInstalled = false, 
+  onInstall = () => {} 
+}) => {
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
       
@@ -81,6 +87,32 @@ export const SettingsModal = ({ onClose, onOpenSplash }) => {
               <span className="text-xs font-extrabold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
                 Cifrado SSL
               </span>
+            </div>
+
+            {/* PWA / Instalación en Dispositivo */}
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white border border-purple-100">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-purple-100 text-brand-700 flex items-center justify-center">
+                  <Smartphone className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-slate-800 block">Aplicación Web Progresiva</span>
+                  <span className="text-[10px] text-slate-500">Carga veloz y acceso directo</span>
+                </div>
+              </div>
+              {isInstalled ? (
+                <span className="inline-flex items-center gap-1 text-xs font-extrabold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Instalada
+                </span>
+              ) : (
+                <button
+                  onClick={onInstall}
+                  className="px-2.5 py-1 text-xs font-extrabold text-white bg-brand-700 hover:bg-brand-800 rounded-lg shadow-sm transition-all hover:scale-105"
+                >
+                  Instalar
+                </button>
+              )}
             </div>
           </div>
 

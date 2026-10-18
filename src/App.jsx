@@ -17,6 +17,9 @@ import { WelcomeSplashModal } from './components/WelcomeSplashModal';
 import { BottomNav } from './components/BottomNav';
 import { StatsSection } from './components/StatsSection';
 import { Footer } from './components/Footer';
+import { PWAInstallBanner } from './components/PWAInstallBanner';
+import { IOSInstallModal } from './components/IOSInstallModal';
+import { usePWAInstall } from './hooks/usePWAInstall';
 import { 
   getStoredProviders, 
   saveStoredProviders, 
@@ -63,6 +66,17 @@ export function App() {
 
   // Barra de Navegación Inferior
   const [activeBottomTab, setActiveBottomTab] = useState('inicio');
+
+  // PWA (Progressive Web App): Gestión de instalación y soporte offline
+  const {
+    canInstall,
+    isInstalled,
+    showIOSModal,
+    setShowIOSModal,
+    isDismissed,
+    promptInstall,
+    dismissPrompt
+  } = usePWAInstall();
 
   // Guardar en localStorage cada vez que cambien providers o favorites
   useEffect(() => {
@@ -219,6 +233,9 @@ export function App() {
         onOpenRegisterModal={() => setShowRegisterModal(true)}
         onOpenNotifications={() => setShowSplash(true)}
         onOpenProfile={() => setShowMyPublicationsModal(true)}
+        canInstall={canInstall}
+        isInstalled={isInstalled}
+        onInstall={promptInstall}
       />
 
       {/* Hero Principal con Saludo, Ubicación, 6 Accesos Rápidos y Banner */}
@@ -478,6 +495,25 @@ export function App() {
         <SettingsModal
           onClose={() => setShowSettingsModal(false)}
           onOpenSplash={() => setShowSplash(true)}
+          canInstall={canInstall}
+          isInstalled={isInstalled}
+          onInstall={promptInstall}
+        />
+      )}
+
+      {/* Aviso discreto de Instalación PWA */}
+      <PWAInstallBanner
+        canInstall={canInstall}
+        isInstalled={isInstalled}
+        isDismissed={isDismissed}
+        onInstall={promptInstall}
+        onDismiss={dismissPrompt}
+      />
+
+      {/* Modal con instrucciones para iOS Safari */}
+      {showIOSModal && (
+        <IOSInstallModal
+          onClose={() => setShowIOSModal(false)}
         />
       )}
 

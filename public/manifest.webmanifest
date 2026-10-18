@@ -1,0 +1,77 @@
+{
+  "id": "/?source=pwa",
+  "name": "LYNX",
+  "short_name": "LYNX",
+  "description": "Conectamos profesionales y trabajadores de oficios con oportunidades reales en Argentina.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF8FF",
+  "theme_color": "#6D28D9",
+  "lang": "es-AR",
+  "dir": "ltr",
+  "categories": [
+    "business",
+    "utilities",
+    "lifestyle"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Buscar Oficios",
+      "short_name": "Buscar",
+      "description": "Explorar profesionales y rubros cerca de ti",
+      "url": "/?tab=busqueda",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Sumá tu Oficio",
+      "short_name": "Publicar",
+      "description": "Publicar tus servicios profesionales en Lynx",
+      "url": "/?action=register",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

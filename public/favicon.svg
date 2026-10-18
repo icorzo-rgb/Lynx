@@ -1,0 +1,22 @@
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lynx-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C3AED" />
+      <stop offset="100%" stop-color="#4C1D95" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#lynx-grad)" />
+  <g transform="translate(106, 75) scale(1.0)">
+    <path d="M38 32 L122 138 L84 152 L60 94 L62 186 L56 198 L80 162 L38 32 Z" fill="#FFFFFF" />
+    <path d="M116 116 L108 140 L76 96 L116 116 Z" fill="#FFFFFF" />
+    <path d="M262 32 L178 138 L216 152 L240 94 L238 186 L244 198 L220 162 L262 32 Z" fill="#FFFFFF" />
+    <path d="M184 116 L192 140 L224 96 L184 116 Z" fill="#FFFFFF" />
+    <path d="M115 160 L108 184 L134 228 L130 196 Z" fill="#FFFFFF" />
+    <path d="M185 160 L192 184 L166 228 L170 196 Z" fill="#FFFFFF" />
+    <path d="M79 190 L126 215 L129 232 L98 226 Z" fill="#FFFFFF" />
+    <path d="M221 190 L174 215 L171 232 L202 226 Z" fill="#FFFFFF" />
+    <path d="M78 214 L62 250 L77 248 L105 292 L75 258 Z" fill="#FFFFFF" />
+    <path d="M222 214 L238 250 L223 248 L195 292 L225 258 Z" fill="#FFFFFF" />
+    <path d="M136 248 C144 246 156 246 164 248 C169 253 162 268 153 273 L153 282 C159 284 167 287 172 290 C167 293 155 291 150 286 C145 291 133 293 128 290 C133 287 141 284 147 282 L147 273 C138 268 131 253 136 248 Z" fill="#FFFFFF" />
+  </g>
+</svg>

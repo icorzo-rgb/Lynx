@@ -4,7 +4,8 @@ import {
   MapPin, 
   User, 
   Plus, 
-  ChevronDown
+  ChevronDown,
+  Download
 } from 'lucide-react';
 import { LynxLogo } from './LynxLogo';
 import { ARGENTINA_LOCATIONS } from '../data/mockData';
@@ -16,7 +17,10 @@ export const Navbar = ({
   onOpenRegisterModal,
   onOpenNotifications,
   onOpenProfile,
-  unreadNotifications = 1
+  unreadNotifications = 1,
+  canInstall = false,
+  isInstalled = false,
+  onInstall = () => {}
 }) => {
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
@@ -89,6 +93,19 @@ export const Navbar = ({
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Sumá tu Oficio</span>
             </button>
+
+            {/* Botón Discreto PWA: Instalar LYNX */}
+            {canInstall && !isInstalled && (
+              <button
+                onClick={onInstall}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-purple-50 hover:bg-purple-100 text-brand-700 text-xs font-bold border border-purple-200 transition-all hover:scale-105"
+                title="Instalar LYNX en tu dispositivo"
+                aria-label="Instalar LYNX"
+              >
+                <Download className="w-4 h-4 stroke-[2.5]" />
+                <span className="hidden lg:inline">Instalar LYNX</span>
+              </button>
+            )}
 
             {/* Campana de Notificaciones */}
             <button

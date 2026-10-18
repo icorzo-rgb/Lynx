@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6D28D9" />
+  <title>LYNX - Sin conexión</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #FAF8FF;
+      color: #1E1B4B;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .card {
+      background: #FFFFFF;
+      border: 1px solid #EDE9FE;
+      box-shadow: 0 10px 30px -5px rgba(109, 40, 217, 0.12);
+      border-radius: 1.5rem;
+      padding: 2.5rem 1.75rem;
+      max-width: 420px;
+      width: 100%;
+    }
+    .icon-container {
+      width: 4.5rem;
+      height: 4.5rem;
+      border-radius: 1.25rem;
+      background: linear-gradient(135deg, #7C3AED, #4C1D95);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 8px 20px -4px rgba(109, 40, 217, 0.35);
+    }
+    .icon-container svg {
+      width: 2.75rem;
+      height: 2.75rem;
+      fill: #FFFFFF;
+    }
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #4C1D95;
+      margin-bottom: 0.5rem;
+    }
+    p {
+      font-size: 0.925rem;
+      color: #64748B;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: #F5F3FF;
+      color: #6D28D9;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 9999px;
+      margin-bottom: 1rem;
+      border: 1px solid #DDD6FE;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 0.875rem 1.25rem;
+      background: #6D28D9;
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 0.925rem;
+      border: none;
+      border-radius: 0.875rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(109, 40, 217, 0.25);
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn:hover {
+      background: #5B21B6;
+    }
+    .btn:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon-container">
+      <svg viewBox="0 0 300 360">
+        <path d="M38 32 L122 138 L84 152 L60 94 L62 186 L56 198 L80 162 L38 32 Z" />
+        <path d="M116 116 L108 140 L76 96 L116 116 Z" />
+        <path d="M262 32 L178 138 L216 152 L240 94 L238 186 L244 198 L220 162 L262 32 Z" />
+        <path d="M184 116 L192 140 L224 96 L184 116 Z" />
+        <path d="M115 160 L108 184 L134 228 L130 196 Z" />
+        <path d="M185 160 L192 184 L166 228 L170 196 Z" />
+        <path d="M79 190 L126 215 L129 232 L98 226 Z" />
+        <path d="M221 190 L174 215 L171 232 L202 226 Z" />
+        <path d="M78 214 L62 250 L77 248 L105 292 L75 258 Z" />
+        <path d="M222 214 L238 250 L223 248 L195 292 L225 258 Z" />
+        <path d="M136 248 C144 246 156 246 164 248 C169 253 162 268 153 273 L153 282 C159 284 167 287 172 290 C167 293 155 291 150 286 C145 291 133 293 128 290 C133 287 141 284 147 282 L147 273 C138 268 131 253 136 248 Z" />
+      </svg>
+    </div>
+    <div class="badge">Modo sin conexión</div>
+    <h1>Estás sin conexión a Internet</h1>
+    <p>LYNX guardó la aplicación para que puedas acceder a ella, pero necesitás conexión activa para ver actualizaciones recientes y contactar nuevos profesionales.</p>
+    <button class="btn" onclick="window.location.reload()">Reintentar conexión</button>
+  </div>
+</body>
+</html>
