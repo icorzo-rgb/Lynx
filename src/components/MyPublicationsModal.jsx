@@ -12,13 +12,14 @@ import { AvatarDisplay } from './AvatarDisplay';
 
 export const MyPublicationsModal = ({
   providers,
+  myPublicationIds = [],
   onOpenRegisterModal,
   onSelectProvider,
   onDeleteProvider,
   onClose
 }) => {
-  // Publicaciones de oficios creadas
-  const userPublications = providers.filter(p => p.isUserCreated || p.id.startsWith('prov-custom-'));
+  // Publicaciones de oficios creadas por este usuario / dispositivo
+  const userPublications = providers.filter(p => myPublicationIds.includes(p.id));
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">

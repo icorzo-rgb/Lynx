@@ -1,3 +1,10 @@
+import { 
+  supabase, 
+  isSupabaseConfigured, 
+  fromDbProvider, 
+  toDbProvider 
+} from '../lib/supabaseClient';
+
 export const CATEGORIES = [
   {
     id: 'todos',
@@ -85,6 +92,29 @@ export const INITIAL_PROVIDERS = [];
 
 const LOCAL_STORAGE_PROVIDERS_KEY = 'lynx_real_workers_v1';
 const LOCAL_STORAGE_FAVORITES_KEY = 'lynx_favorites_v3';
+const LOCAL_STORAGE_MY_PUBS_KEY = 'lynx_my_publication_ids_v1';
+
+// Función para normalizar perfiles y limpiar reseñas
+export const normalizeProviders = (list) => {
+  if (!Array.isArray(list)) return [];
+  return list
+    .filter(p => p && (p.isUserCreated || (typeof p.id === 'string' && p.id.startsWith('prov-custom-'))))
+    .map(p => {
+      const realReviews = (p.reviews || []).filter(
+        r => !r.id?.startsWith('rev-welcome-') && r.clientName !== 'Equipo de Validación Lynx'
+      );
+      const total = realReviews.length;
+      const avg = total > 0 
+        ? parseFloat((realReviews.reduce((acc, r) => acc + (Number(r.ratingOverall) || 0), 0) / total).toFixed(1))
+        : null;
+      return {
+        ...p,
+        reviews: realReviews,
+        totalReviews: total,
+        rating: avg
+      };
+    });
+};
 
 export const getStoredProviders = () => {
   try {
@@ -92,24 +122,7 @@ export const getStoredProviders = () => {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        // Filtrar exclusivamente perfiles reales creados por usuarios y limpiar reseñas ficticias
-        return parsed
-          .filter(p => p.isUserCreated || p.id.startsWith('prov-custom-'))
-          .map(p => {
-            const realReviews = (p.reviews || []).filter(
-              r => !r.id?.startsWith('rev-welcome-') && r.clientName !== 'Equipo de Validación Lynx'
-            );
-            const total = realReviews.length;
-            const avg = total > 0 
-              ? parseFloat((realReviews.reduce((acc, r) => acc + (Number(r.ratingOverall) || 0), 0) / total).toFixed(1))
-              : null;
-            return {
-              ...p,
-              reviews: realReviews,
-              totalReviews: total,
-              rating: avg
-            };
-          });
+        return normalizeProviders(parsed);
       }
     }
   } catch (err) {
@@ -123,6 +136,233 @@ export const saveStoredProviders = (providersList) => {
     localStorage.setItem(LOCAL_STORAGE_PROVIDERS_KEY, JSON.stringify(providersList));
   } catch (err) {
     console.warn('Error saving providers to localStorage:', err);
+  }
+};
+
+// Sincronización con el Backend Compartido de Lynx (Supabase y Fallback Local)
+export const fetchProvidersApi = async () => {
+  // 1. Prioridad: Consulta a Supabase si está configurado (Producción en Vercel y Local)
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('providers')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        const mapped = data.map(fromDbProvider);
+        const normalized = normalizeProviders(mapped);
+        saveStoredProviders(normalized);
+        return normalized;
+      } else if (error) {
+        console.warn('[LYNX Supabase] Error al consultar perfiles:', error.message);
+      }
+    } catch (err) {
+      console.warn('[LYNX Supabase] Fallo de red con Supabase:', err);
+    }
+  }
+
+  // 2. Fallback de desarrollo local si se ejecuta con el servidor Vite local
+  try {
+    const res = await fetch('/api/providers', {
+      headers: { 'Accept': 'application/json' },
+      cache: 'no-store'
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        const normalized = normalizeProviders(data);
+        saveStoredProviders(normalized);
+        return normalized;
+      }
+    }
+  } catch (err) {
+    // Entorno estático en Vercel o sin conexión
+  }
+
+  // 3. Fallback de contingencia offline (PWA): datos locales en el navegador
+  return getStoredProviders();
+};
+
+export const saveProviderApi = async (provider) => {
+  // 1. Guardar de forma persistente en Supabase si está configurado
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const dbRow = toDbProvider(provider);
+      const { data, error } = await supabase
+        .from('providers')
+        .upsert(dbRow)
+        .select()
+        .single();
+
+      if (!error && data) {
+        return { success: true, provider: fromDbProvider(data) };
+      } else if (error) {
+        console.error('[LYNX Supabase] Error guardando trabajador:', error.message);
+      }
+    } catch (err) {
+      console.warn('[LYNX Supabase] Fallo de red guardando en Supabase:', err);
+    }
+  }
+
+  // 2. Fallback de desarrollo local (servidor Vite)
+  try {
+    const res = await fetch('/api/providers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(provider)
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    // Entorno sin API local
+  }
+
+  return null;
+};
+
+export const deleteProviderApi = async (providerId) => {
+  // 1. Eliminar en Supabase si está configurado
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { error } = await supabase
+        .from('providers')
+        .delete()
+        .eq('id', providerId);
+
+      if (!error) {
+        return { success: true, deletedId: providerId };
+      } else {
+        console.warn('[LYNX Supabase] Aviso al eliminar en Supabase:', error.message);
+      }
+    } catch (err) {
+      console.warn('[LYNX Supabase] Fallo de red al eliminar en Supabase:', err);
+    }
+  }
+
+  // 2. Fallback de desarrollo local
+  try {
+    const res = await fetch(`/api/providers/${encodeURIComponent(providerId)}`, {
+      method: 'DELETE'
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    // Entorno sin API local
+  }
+
+  return null;
+};
+
+export const addReviewApi = async (providerId, review) => {
+  // 1. Enviar calificación a Supabase mediante la función RPC segura
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase.rpc('add_provider_review', {
+        p_provider_id: providerId,
+        p_review: review
+      });
+
+      if (!error && data) {
+        return { success: true, ...data };
+      }
+
+      // Si la función RPC no estuviese creada en Supabase, aplicar actualización directa como respaldo
+      const { data: currentP } = await supabase
+        .from('providers')
+        .select('reviews')
+        .eq('id', providerId)
+        .single();
+
+      if (currentP) {
+        const updatedReviews = [review, ...(currentP.reviews || [])];
+        const total = updatedReviews.length;
+        const sumRatings = updatedReviews.reduce((acc, r) => acc + (Number(r.ratingOverall) || 0), 0);
+        const avg = total > 0 ? parseFloat((sumRatings / total).toFixed(1)) : null;
+
+        const { error: updErr } = await supabase
+          .from('providers')
+          .update({
+            reviews: updatedReviews,
+            total_reviews: total,
+            rating: avg
+          })
+          .eq('id', providerId);
+
+        if (!updErr) {
+          return { success: true, rating: avg, totalReviews: total };
+        }
+      }
+    } catch (err) {
+      console.warn('[LYNX Supabase] Error agregando reseña en Supabase:', err);
+    }
+  }
+
+  // 2. Fallback de desarrollo local
+  try {
+    const res = await fetch(`/api/providers/${encodeURIComponent(providerId)}/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(review)
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    // Entorno sin API local
+  }
+
+  return null;
+};
+
+// Gestión local de IDs de publicaciones creadas en este navegador/dispositivo
+export const getMyPublicationIds = () => {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_MY_PUBS_KEY);
+    if (raw !== null) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    } else {
+      // Migración suave: si el usuario ya tenía publicaciones creadas localmente antes de la persistencia compartida
+      const localProviders = getStoredProviders();
+      if (localProviders.length > 0) {
+        const initialIds = localProviders.map(p => p.id);
+        localStorage.setItem(LOCAL_STORAGE_MY_PUBS_KEY, JSON.stringify(initialIds));
+        return initialIds;
+      }
+    }
+  } catch (err) {
+    console.warn('Error reading my publications from localStorage:', err);
+  }
+  return [];
+};
+
+export const addMyPublicationId = (id) => {
+  try {
+    const current = getMyPublicationIds();
+    if (!current.includes(id)) {
+      const updated = [id, ...current];
+      localStorage.setItem(LOCAL_STORAGE_MY_PUBS_KEY, JSON.stringify(updated));
+      return updated;
+    }
+    return current;
+  } catch (err) {
+    console.warn('Error adding my publication ID:', err);
+    return [];
+  }
+};
+
+export const removeMyPublicationId = (id) => {
+  try {
+    const current = getMyPublicationIds();
+    const updated = current.filter(item => item !== id);
+    localStorage.setItem(LOCAL_STORAGE_MY_PUBS_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (err) {
+    console.warn('Error removing my publication ID:', err);
+    return [];
   }
 };
 
@@ -148,3 +388,4 @@ export const saveStoredFavorites = (favoritesList) => {
     console.warn('Error saving favorites to localStorage:', err);
   }
 };
+

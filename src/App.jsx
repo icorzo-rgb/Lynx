@@ -25,6 +25,13 @@ import {
   saveStoredProviders, 
   getStoredFavorites, 
   saveStoredFavorites, 
+  fetchProvidersApi,
+  saveProviderApi,
+  deleteProviderApi,
+  addReviewApi,
+  getMyPublicationIds,
+  addMyPublicationId,
+  removeMyPublicationId,
   ARGENTINA_LOCATIONS 
 } from './data/mockData';
 import { 
@@ -34,11 +41,13 @@ import {
   UserPlus, 
   RefreshCw 
 } from 'lucide-react';
+import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
 
 export function App() {
-  // Estado de Datos y Persistencia Real en LocalStorage
+  // Estado de Datos y Persistencia Compartida Multi-Usuario
   const [providers, setProviders] = useState(() => getStoredProviders());
   const [favorites, setFavorites] = useState(() => getStoredFavorites());
+  const [myPublicationIds, setMyPublicationIds] = useState(() => getMyPublicationIds());
 
   // Filtros de Búsqueda
   const [selectedLocation, setSelectedLocation] = useState(ARGENTINA_LOCATIONS[0]);
@@ -77,6 +86,69 @@ export function App() {
     promptInstall,
     dismissPrompt
   } = usePWAInstall();
+
+  // Sincronización continua con la base de datos compartida y soporte offline
+  useEffect(() => {
+    let isMounted = true;
+    const syncWithBackend = async () => {
+      const remote = await fetchProvidersApi();
+      if (isMounted && Array.isArray(remote)) {
+        setProviders(remote);
+      }
+    };
+
+    syncWithBackend();
+
+    // Suscripción en tiempo real a Supabase (para reflejar publicaciones instantáneamente entre dispositivos)
+    let realtimeChannel = null;
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        realtimeChannel = supabase
+          .channel('public:providers_realtime')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'providers' },
+            () => {
+              syncWithBackend();
+            }
+          )
+          .subscribe();
+      } catch (err) {
+        console.warn('Realtime channel error:', err);
+      }
+    }
+
+    // Sincronizar cuando el usuario regresa a la pestaña
+    const handleFocus = () => {
+      syncWithBackend();
+    };
+
+    // Sincronizar cambios entre diferentes pestañas del mismo navegador
+    const handleStorage = (e) => {
+      if (e.key === 'lynx_real_workers_v1') {
+        setProviders(getStoredProviders());
+      }
+      if (e.key === 'lynx_my_publication_ids_v1') {
+        setMyPublicationIds(getMyPublicationIds());
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('storage', handleStorage);
+
+    // Consulta periódica para descubrir nuevos perfiles publicados por otros usuarios
+    const interval = setInterval(syncWithBackend, 10000);
+
+    return () => {
+      isMounted = false;
+      if (realtimeChannel && supabase) {
+        supabase.removeChannel(realtimeChannel);
+      }
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('storage', handleStorage);
+      clearInterval(interval);
+    };
+  }, []);
 
   // Guardar en localStorage cada vez que cambien providers o favorites
   useEffect(() => {
@@ -152,7 +224,7 @@ export function App() {
   }, [providers, selectedCategory, searchQuery, onlyMatriculados, emergencyOnly, freeQuoteOnly, sortBy]);
 
   // Manejador del Sistema de Puntuación (Estrellas de 0 a 5 sin puntuaciones ficticias)
-  const handleAddReview = (providerId, newReview) => {
+  const handleAddReview = async (providerId, newReview) => {
     setProviders((prev) =>
       prev.map((p) => {
         if (p.id === providerId) {
@@ -186,15 +258,26 @@ export function App() {
         };
       });
     }
+
+    // Persistir reseña en el servidor / base compartida
+    await addReviewApi(providerId, newReview);
   };
 
   // Manejador para registrar nuevo trabajador / oficio
-  const handleAddProvider = (newProvider) => {
+  const handleAddProvider = async (newProvider) => {
     setProviders((prev) => [newProvider, ...prev]);
+    const updatedMyPubs = addMyPublicationId(newProvider.id);
+    setMyPublicationIds(updatedMyPubs);
+    // Persistir perfil en el servidor compartido
+    await saveProviderApi(newProvider);
   };
 
-  const handleDeleteProvider = (providerId) => {
+  const handleDeleteProvider = async (providerId) => {
     setProviders((prev) => prev.filter(p => p.id !== providerId));
+    const updatedMyPubs = removeMyPublicationId(providerId);
+    setMyPublicationIds(updatedMyPubs);
+    // Eliminar de la persistencia compartida
+    await deleteProviderApi(providerId);
   };
 
   const handleResetFilters = () => {
@@ -484,6 +567,7 @@ export function App() {
       {showMyPublicationsModal && (
         <MyPublicationsModal
           providers={providers}
+          myPublicationIds={myPublicationIds}
           onOpenRegisterModal={() => setShowRegisterModal(true)}
           onSelectProvider={(p) => setSelectedProvider(p)}
           onDeleteProvider={handleDeleteProvider}

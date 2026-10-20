@@ -29,6 +29,7 @@ const PRECACHE_ASSETS = [
 
 // Palabras clave de URLs que NUNCA deben ser almacenadas en caché (privacidad / datos de usuario)
 const EXCLUDED_PATTERNS = [
+  '/api/',
   '/api/auth',
   '/api/user',
   '/api/private',
@@ -125,7 +126,7 @@ self.addEventListener('fetch', (event) => {
   // 5. Estrategia para Activos Estáticos (JS, CSS, Fuentes, Iconos, Imágenes)
   // Stale-While-Revalidate: Responde velozmente con la copia en caché y actualiza en segundo plano
   const isStaticAsset = (
-    url.origin === self.location.origin ||
+    (url.origin === self.location.origin && !url.pathname.startsWith('/api/')) ||
     url.hostname.includes('fonts.googleapis.com') ||
     url.hostname.includes('fonts.gstatic.com')
   );
